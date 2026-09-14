@@ -7,266 +7,251 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  
   <style>
     :root {
       --bg-color: #f8fafc;
       --card-bg: #ffffff;
-      --text-main: #0f172a;
+      --text-main: #1e293b;
       --text-muted: #64748b;
       --primary: #2563eb;
       --border: #e2e8f0;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-    body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; padding-bottom: 50px; }
-
-    header {
-      background: #ffffff;
-      border-bottom: 1px solid var(--border);
-      padding: 40px 20px;
-      text-align: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
     }
 
-    .brand { font-size: 28px; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px; margin-bottom: 6px; }
-    .brand span { color: var(--primary); }
-    .subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 25px; }
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 span {
+      color: var(--primary);
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
 
     .search-box {
+      margin: 0 auto 2rem auto;
       max-width: 650px;
-      margin: 0 auto;
     }
 
     .search-input {
       width: 100%;
-      padding: 16px 22px;
-      font-size: 16px;
+      padding: 1rem 1.5rem;
+      font-size: 1.1rem;
       border: 2px solid var(--border);
-      border-radius: 30px;
+      border-radius: 50px;
       outline: none;
       transition: all 0.2s ease;
-      background: #ffffff;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
 
     .search-input:focus {
       border-color: var(--primary);
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+      box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.15);
     }
 
-    .container { max-width: 1200px; margin: 35px auto; padding: 0 20px; }
-    
-    .results-count {
-      font-size: 14px;
+    .status-msg {
+      margin-bottom: 1.5rem;
       color: var(--text-muted);
-      margin-bottom: 20px;
       font-weight: 500;
+      font-size: 0.95rem;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 22px;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
     }
 
     .card {
       background: var(--card-bg);
-      border: 1px solid var(--border);
       border-radius: 12px;
-      overflow: hidden;
+      padding: 1.5rem;
+      border-top: 5px solid #eab308;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       display: flex;
       flex-direction: column;
-      position: relative;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      justify-content: space-between;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
 
     .card:hover {
       transform: translateY(-3px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
 
-    .spine-accent {
-      height: 6px;
-      width: 100%;
-      background: var(--primary);
-    }
-
-    .card-body { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; }
-
-    .code-badge {
-      align-self: flex-start;
+    .tag-codigo {
+      display: inline-block;
       background: #f1f5f9;
-      color: #334155;
-      padding: 4px 10px;
-      font-size: 12px;
+      color: #475569;
+      font-weight: 600;
+      font-size: 0.8rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 20px;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
       font-weight: 700;
-      border-radius: 6px;
-      letter-spacing: 0.5px;
-      margin-bottom: 12px;
-      border: 1px solid #cbd5e1;
+      color: #0f172a;
+      margin-bottom: 0.4rem;
+      line-height: 1.3;
     }
 
-    .book-title { font-size: 17px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; line-height: 1.3; }
-    .book-author { font-size: 14px; color: var(--text-muted); margin-bottom: 14px; font-weight: 500; }
-
-    .book-details {
-      margin-top: auto;
-      padding-top: 14px;
-      border-top: 1px dashed var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      font-size: 13px;
+    .card-author {
+      color: #64748b;
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
     }
-
-    .detail-item { display: flex; justify-content: space-between; color: var(--text-muted); }
-    .detail-item strong { color: var(--text-main); font-weight: 600; }
 
     .tag-assunto {
       display: inline-block;
-      margin-top: 10px;
-      background: #eff6ff;
-      color: #1e40af;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
+      background: #e0f2fe;
+      color: #0369a1;
       font-weight: 500;
-      width: fit-content;
+      font-size: 0.8rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
     }
 
-    .status-msg {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 60px 0;
+    .card-footer {
+      border-top: 1px dashed var(--border);
+      padding-top: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
       color: var(--text-muted);
-      font-size: 16px;
     }
-
-    .spinner {
-      border: 3px solid #f3f3f3;
-      border-top: 3px solid var(--primary);
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 15px auto;
-    }
-
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="brand">Acervo <span>Bibliográfico</span></div>
-    <p class="subtitle">Pesquise por Título, Autor, Assunto ou Código de Localização</p>
-    <div class="search-box">
-      <input type="text" id="searchInput" class="search-input" placeholder="Digite para pesquisar..." oninput="filtrarLivros()">
-    </div>
-  </header>
+  <div class="container">
+    <header>
+      <h1>Acervo <span>Bibliográfico</span></h1>
+      <p>Pesquise por Título, Autor, Assunto ou Código de Localização</p>
+    </header>
 
-  <main class="container">
-    <div id="resultsCount" class="results-count"></div>
-    <div id="grid" class="grid"></div>
-  </main>
+    <div class="search-box">
+      <input type="text" id="searchInput" class="search-input" placeholder="Carregando acervo..." disabled>
+    </div>
+
+    <div id="statusMsg" class="status-msg">Carregando dados...</div>
+
+    <div id="resultsGrid" class="grid"></div>
+  </div>
 
   <script>
-    // URL da API configurada
     const API_URL = "https://script.google.com/macros/s/AKfycbxkLzHZcm-9pAgHMLwAD4upBuun1CL5z34E4k_Ima75vYsRJ29naDhHGw4_Ai5NKouE/exec";
+    
+    let allBooks = [];
+    const searchInput = document.getElementById('searchInput');
+    const statusMsg = document.getElementById('statusMsg');
+    const resultsGrid = document.getElementById('resultsGrid');
 
-    let todosOsLivros = [];
-    let timeoutBusca = null;
-
-    const coresMap = {
-      'vermelho': '#ef4444', 'vermelha': '#ef4444',
-      'azul': '#3b82f6',
-      'verde': '#22c55e',
-      'amarelo': '#eab308', 'amarela': '#eab308',
-      'laranja': '#f97316',
-      'roxo': '#a855f7', 'roxa': '#a855f7',
-      'preto': '#1e293b', 'preta': '#1e293b',
-      'branco': '#cbd5e1', 'branca': '#cbd5e1',
-      'cinza': '#64748b',
-      'marrom': '#78350f',
-      'rosa': '#ec4899'
-    };
-
-    function obterCorHex(nomeCor) {
-      if (!nomeCor) return '#2563eb';
-      const corClean = nomeCor.toLowerCase().trim();
-      for (let key in coresMap) {
-        if (corClean.includes(key)) return coresMap[key];
-      }
-      return '#2563eb';
-    }
-
-    async function carregarAcervo() {
-      const grid = document.getElementById('grid');
-      grid.innerHTML = '<div class="status-msg"><div class="spinner"></div>Carregando o acervo...</div>';
-
+    async function loadData() {
       try {
         const response = await fetch(API_URL);
-        todosOsLivros = await response.json();
-        exibirLivros(todosOsLivros);
-      } catch (erro) {
-        console.error("Erro ao carregar:", erro);
-        grid.innerHTML = '<div class="status-msg">Erro ao carregar os dados do acervo.</div>';
+        allBooks = await response.json();
+        
+        // Habilita a caixa de busca
+        searchInput.disabled = false;
+        searchInput.placeholder = "Digite para pesquisar...";
+        
+        // Mensagem inicial e tela limpa
+        statusMsg.innerText = "Digite algum termo no campo acima para pesquisar no acervo.";
+        resultsGrid.innerHTML = "";
+      } catch (error) {
+        console.error(error);
+        statusMsg.innerText = "Erro ao carregar os dados do acervo. Tente recarregar a página.";
       }
     }
 
-    function exibirLivros(livros) {
-      const grid = document.getElementById('grid');
-      const count = document.getElementById('resultsCount');
+    function handleSearch() {
+      const query = searchInput.value.trim().toLowerCase();
 
-      count.innerText = `${livros.length} item(ns) encontrado(s)`;
-      grid.innerHTML = '';
-
-      if (livros.length === 0) {
-        grid.innerHTML = '<div class="status-msg">Nenhum livro encontrado com esse termo.</div>';
+      // Se o campo de pesquisa estiver vazio, limpa a tela
+      if (query === "") {
+        statusMsg.innerText = "Digite algum termo no campo acima para pesquisar no acervo.";
+        resultsGrid.innerHTML = "";
         return;
       }
 
-      livros.forEach(item => {
-        const corHex = obterCorHex(item.corLombada);
-
-        grid.innerHTML += `
-          <div class="card">
-            <div class="spine-accent" style="background-color: ${corHex};"></div>
-            <div class="card-body">
-              <span class="code-badge">📍 ${item.codigo || 'Sem Código'}</span>
-              <h3 class="book-title">${item.titulo || 'Sem Título'}</h3>
-              <p class="book-author">${item.autor || 'Autor Não Especificado'}</p>
-              
-              ${item.assunto ? `<span class="tag-assunto">📚 ${item.assunto}</span>` : ''}
-
-              <div class="book-details">
-                ${item.exemplar ? `<div class="detail-item"><span>Exemplar:</span> <strong>${item.exemplar}</strong></div>` : ''}
-                ${item.volume ? `<div class="detail-item"><span>Volume:</span> <strong>${item.volume}</strong></div>` : ''}
-                ${item.corLombada ? `<div class="detail-item"><span>Lombada:</span> <strong>${item.corLombada}</strong></div>` : ''}
-              </div>
-            </div>
-          </div>
-        `;
+      // Filtra os livros cadastrados
+      const filtered = allBooks.filter(book => {
+        return (
+          (book.titulo && book.titulo.toLowerCase().includes(query)) ||
+          (book.autor && book.autor.toLowerCase().includes(query)) ||
+          (book.assunto && book.assunto.toLowerCase().includes(query)) ||
+          (book.codigo && book.codigo.toLowerCase().includes(query))
+        );
       });
+
+      // Atualiza o contador de resultados
+      if (filtered.length > 0) {
+        statusMsg.innerText = `${filtered.length} item(ns) encontrado(s)`;
+      } else {
+        statusMsg.innerText = "Nenhum livro encontrado com esse termo.";
+      }
+
+      // Renderiza os cartões encontrados
+      renderBooks(filtered);
     }
 
-    function filtrarLivros() {
-      clearTimeout(timeoutBusca);
-      timeoutBusca = setTimeout(() => {
-        const termo = document.getElementById('searchInput').value.toLowerCase().trim();
-        
-        const filtrados = todosOsLivros.filter(item => {
-          return item.titulo.toLowerCase().includes(termo) ||
-                 item.autor.toLowerCase().includes(termo) ||
-                 item.assunto.toLowerCase().includes(termo) ||
-                 item.codigo.toLowerCase().includes(termo);
-        });
-
-        exibirLivros(filtrados);
-      }, 150);
+    function renderBooks(books) {
+      resultsGrid.innerHTML = books.map(book => `
+        <div class="card">
+          <div>
+            ${book.codigo ? `<span class="tag-codigo">📍 ${book.codigo}</span>` : ''}
+            <div class="card-title">${book.titulo || 'Sem título'}</div>
+            <div class="card-author">${book.autor || 'Autor não informado'}</div>
+            ${book.assunto ? `<span class="tag-assunto">📚 ${book.assunto}</span>` : ''}
+          </div>
+          <div class="card-footer">
+            <span>Lombada:</span>
+            <strong>${book.corLombada || 'Não informada'}</strong>
+          </div>
+        </div>
+      `).join('');
     }
 
-    carregarAcervo();
+    searchInput.addEventListener('input', handleSearch);
+
+    // Inicia o carregamento dos dados
+    loadData();
   </script>
 </body>
 </html>
