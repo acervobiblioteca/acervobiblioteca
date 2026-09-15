@@ -154,7 +154,6 @@
       gap: 1.5rem;
     }
 
-    /* Card principal com flexbox alinhado */
     .card {
       background: var(--card-bg);
       border-radius: 12px;
@@ -183,7 +182,6 @@
       flex: 1;
     }
 
-    /* Moldura do Canto Direito (Painel de Capa) */
     .cover-frame {
       width: 90px;
       height: 125px;
@@ -206,6 +204,14 @@
     .cover-placeholder {
       font-size: 1.8rem;
       color: #94a3b8;
+    }
+
+    .hide-img {
+      display: none !important;
+    }
+
+    .hide-placeholder {
+      display: none !important;
     }
 
     .tag-codigo {
@@ -443,7 +449,10 @@
 
     function renderBooks(books) {
       resultsGrid.innerHTML = books.map(book => {
-        const hasCover = book.capaUrl && book.capaUrl.trim() !== "";
+        // Limpa espaços acidentais no link da imagem
+        const rawUrl = (book.capaUrl || '').trim().replace(/\s+/g, '');
+        const hasCover = rawUrl.length > 0;
+
         return `
           <div class="card">
             <div class="card-body">
@@ -455,7 +464,11 @@
               </div>
               <div class="cover-frame">
                 ${hasCover ? `
-                  <img src="${book.capaUrl}" alt="Capa" onerror="this.parentElement.innerHTML='<span class=\\'cover-placeholder\\'>📖</span>'">
+                  <img src="${rawUrl}" 
+                       alt="Capa" 
+                       referrerpolicy="no-referrer" 
+                       onerror="this.classList.add('hide-img'); this.nextElementSibling.classList.remove('hide-placeholder');">
+                  <span class="cover-placeholder hide-placeholder">📖</span>
                 ` : `
                   <span class="cover-placeholder">📖</span>
                 `}
