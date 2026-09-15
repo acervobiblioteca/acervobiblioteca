@@ -449,7 +449,6 @@
 
     function renderBooks(books) {
       resultsGrid.innerHTML = books.map(book => {
-        // Limpa espaços acidentais no link da imagem
         const rawUrl = (book.capaUrl || '').trim().replace(/\s+/g, '');
         const hasCover = rawUrl.length > 0;
 
