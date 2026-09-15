@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Acervo Bibliográfico - Consulta</title>
+  <title>Acervo Bibliográfico - Consulta Inteligente</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -60,9 +60,11 @@
       font-size: 1rem;
     }
 
-    .search-box {
-      margin: 0 auto 2rem auto;
+    /* Container de busca e sugestões */
+    .search-container {
+      position: relative;
       max-width: 650px;
+      margin: 0 auto 1.5rem auto;
     }
 
     .search-input {
@@ -81,11 +83,77 @@
       box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.15);
     }
 
+    /* Caixa do Autocomplete */
+    .suggestions-box {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-top: 8px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      overflow: hidden;
+      display: none;
+    }
+
+    .suggestion-item {
+      padding: 0.75rem 1.25rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.95rem;
+      transition: background 0.15s;
+    }
+
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    .suggestion-item:hover {
+      background-color: #eff6ff;
+      color: var(--primary);
+    }
+
+    .suggestion-type {
+      font-size: 0.75rem;
+      background: #f1f5f9;
+      color: #64748b;
+      padding: 0.2rem 0.5rem;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    /* Caixa "Você quis dizer" */
+    .did-you-mean {
+      background-color: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      padding: 0.85rem 1.25rem;
+      border-radius: 12px;
+      margin: 0 auto 1.5rem auto;
+      max-width: 650px;
+      font-size: 0.95rem;
+      display: none;
+    }
+
+    .did-you-mean span {
+      font-weight: 700;
+      text-decoration: underline;
+      cursor: pointer;
+      color: #15803d;
+    }
+
     .status-msg {
       margin-bottom: 1.5rem;
       color: var(--text-muted);
       font-weight: 500;
       font-size: 0.95rem;
+      text-align: center;
     }
 
     .grid {
@@ -165,8 +233,14 @@
       <p>Pesquise por Título, Autor, Assunto ou Código de Localização</p>
     </header>
 
-    <div class="search-box">
-      <input type="text" id="searchInput" class="search-input" placeholder="Carregando acervo..." disabled>
+    <div class="search-container">
+      <input type="text" id="searchInput" class="search-input" placeholder="Carregando acervo..." disabled autocomplete="off">
+      <div id="suggestionsBox" class="suggestions-box"></div>
+    </div>
+
+    <!-- Alerta "Você quis dizer..." -->
+    <div id="didYouMean" class="did-you-mean">
+      💡 Nenhum resultado exato encontrado. Você quis dizer: <span id="suggestionTerm"></span>?
     </div>
 
     <div id="statusMsg" class="status-msg">Carregando dados...</div>
@@ -178,57 +252,177 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbxkLzHZcm-9pAgHMLwAD4upBuun1CL5z34E4k_Ima75vYsRJ29naDhHGw4_Ai5NKouE/exec";
     
     let allBooks = [];
+    let searchTermsCatalog = []; // Lista única para autocomplete e sugestões
+
     const searchInput = document.getElementById('searchInput');
+    const suggestionsBox = document.getElementById('suggestionsBox');
+    const didYouMean = document.getElementById('didYouMean');
+    const suggestionTerm = document.getElementById('suggestionTerm');
     const statusMsg = document.getElementById('statusMsg');
     const resultsGrid = document.getElementById('resultsGrid');
+
+    // Remove acentos e converte para minúsculas
+    function normalizeText(str) {
+      return (str || '')
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+    }
+
+    // Algoritmo para calcular a similaridade de digitação (Levenshtein Distance)
+    function levenshteinDistance(a, b) {
+      const matrix = [];
+      for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+      for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+      for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+          if (b.charAt(i - 1) === a.charAt(j - 1)) {
+            matrix[i][j] = matrix[i - 1][j - 1];
+          } else {
+            matrix[i][j] = Math.min(
+              matrix[i - 1][j - 1] + 1,
+              matrix[i][j - 1] + 1,
+              matrix[i - 1][j] + 1
+            );
+          }
+        }
+      }
+      return matrix[b.length][a.length];
+    }
 
     async function loadData() {
       try {
         const response = await fetch(API_URL);
         allBooks = await response.json();
         
-        // Habilita a caixa de busca
+        // Constrói catálogo de termos únicos (Autores, Títulos, Assuntos)
+        const termsMap = new Map();
+        allBooks.forEach(b => {
+          if (b.autor) termsMap.set(b.autor.trim(), 'Autor');
+          if (b.titulo) termsMap.set(b.titulo.trim(), 'Título');
+          if (b.assunto) termsMap.set(b.assunto.trim(), 'Assunto');
+        });
+        
+        searchTermsCatalog = Array.from(termsMap.entries()).map(([term, type]) => ({
+          term,
+          type,
+          normalized: normalizeText(term)
+        }));
+
         searchInput.disabled = false;
         searchInput.placeholder = "Digite para pesquisar...";
-        
-        // Mensagem inicial e tela limpa
         statusMsg.innerText = "Digite algum termo no campo acima para pesquisar no acervo.";
-        resultsGrid.innerHTML = "";
       } catch (error) {
         console.error(error);
         statusMsg.innerText = "Erro ao carregar os dados do acervo. Tente recarregar a página.";
       }
     }
 
-    function handleSearch() {
-      const query = searchInput.value.trim().toLowerCase();
+    function handleSearch(customQuery = null) {
+      const queryRaw = customQuery !== null ? customQuery : searchInput.value;
+      const query = normalizeText(queryRaw);
 
-      // Se o campo de pesquisa estiver vazio, limpa a tela
+      suggestionsBox.style.display = 'none';
+      didYouMean.style.display = 'none';
+
       if (query === "") {
         statusMsg.innerText = "Digite algum termo no campo acima para pesquisar no acervo.";
         resultsGrid.innerHTML = "";
         return;
       }
 
-      // Filtra os livros cadastrados
-      const filtered = allBooks.filter(book => {
+      // Busca por correspondência parcial (título, autor, assunto, código)
+      let filtered = allBooks.filter(book => {
         return (
-          (book.titulo && book.titulo.toLowerCase().includes(query)) ||
-          (book.autor && book.autor.toLowerCase().includes(query)) ||
-          (book.assunto && book.assunto.toLowerCase().includes(query)) ||
-          (book.codigo && book.codigo.toLowerCase().includes(query))
+          normalizeText(book.titulo).includes(query) ||
+          normalizeText(book.autor).includes(query) ||
+          normalizeText(book.assunto).includes(query) ||
+          normalizeText(book.codigo).includes(query)
         );
       });
 
-      // Atualiza o contador de resultados
+      // Se não encontrou resultados exatos, ativa a busca por proximidade ("Você quis dizer...")
+      if (filtered.length === 0 && query.length >= 3) {
+        let bestMatch = null;
+        let lowestDistance = Infinity;
+
+        searchTermsCatalog.forEach(item => {
+          const dist = levenshteinDistance(query, item.normalized);
+          // Permite até 3 diferenças de digitação
+          if (dist < lowestDistance && dist <= 3) {
+            lowestDistance = dist;
+            bestMatch = item;
+          }
+        });
+
+        if (bestMatch) {
+          suggestionTerm.innerText = bestMatch.term;
+          didYouMean.style.display = 'block';
+          
+          // Permite clicar na sugestão para aplicar a pesquisa
+          suggestionTerm.onclick = () => {
+            searchInput.value = bestMatch.term;
+            handleSearch(bestMatch.term);
+          };
+
+          // Também traz os resultados da sugestão para facilitar
+          filtered = allBooks.filter(book => {
+            return (
+              normalizeText(book.titulo).includes(bestMatch.normalized) ||
+              normalizeText(book.autor).includes(bestMatch.normalized) ||
+              normalizeText(book.assunto).includes(bestMatch.normalized)
+            );
+          });
+        }
+      }
+
+      // Atualiza mensagens e renderização
       if (filtered.length > 0) {
         statusMsg.innerText = `${filtered.length} item(ns) encontrado(s)`;
       } else {
         statusMsg.innerText = "Nenhum livro encontrado com esse termo.";
       }
 
-      // Renderiza os cartões encontrados
       renderBooks(filtered);
+    }
+
+    // Exibe a caixa de autocomplete enquanto digita
+    function showAutocomplete() {
+      const query = normalizeText(searchInput.value);
+      
+      if (query.length < 2) {
+        suggestionsBox.style.display = 'none';
+        return;
+      }
+
+      const matches = searchTermsCatalog
+        .filter(item => item.normalized.includes(query))
+        .slice(0, 5); // Limita a 5 sugestões rápidas
+
+      if (matches.length === 0) {
+        suggestionsBox.style.display = 'none';
+        return;
+      }
+
+      suggestionsBox.innerHTML = matches.map(item => `
+        <div class="suggestion-item" data-value="${item.term}">
+          <span>${item.term}</span>
+          <span class="suggestion-type">${item.type}</span>
+        </div>
+      `).join('');
+
+      suggestionsBox.style.display = 'block';
+
+      // Clique em uma das sugestões da lista
+      document.querySelectorAll('.suggestion-item').forEach(el => {
+        el.addEventListener('click', () => {
+          const val = el.getAttribute('data-value');
+          searchInput.value = val;
+          handleSearch(val);
+        });
+      });
     }
 
     function renderBooks(books) {
@@ -248,9 +442,19 @@
       `).join('');
     }
 
-    searchInput.addEventListener('input', handleSearch);
+    // Eventos de digitação
+    searchInput.addEventListener('input', () => {
+      showAutocomplete();
+      handleSearch();
+    });
 
-    // Inicia o carregamento dos dados
+    // Esconde o autocomplete se clicar fora da barra de busca
+    document.addEventListener('click', (e) => {
+      if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+        suggestionsBox.style.display = 'none';
+      }
+    });
+
     loadData();
   </script>
 </body>
