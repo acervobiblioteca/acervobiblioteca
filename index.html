@@ -182,6 +182,7 @@
       flex: 1;
     }
 
+    /* ESTILOS DA MOLDURA E EFEITO ÁGUA */
     .cover-frame {
       width: 90px;
       height: 125px;
@@ -193,12 +194,88 @@
       justify-content: center;
       overflow: hidden;
       flex-shrink: 0;
+      position: relative;
     }
 
     .cover-frame img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      transition: transform 0.3s ease;
+      will-change: transform, filter;
+    }
+
+    /* Camada de brilho/reflexo da água */
+    .cover-frame::after {
+      content: '';
+      position: absolute;
+      top: -150%;
+      left: -150%;
+      width: 300%;
+      height: 300%;
+      background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(56, 189, 248, 0.2) 40%,
+        rgba(255, 255, 255, 0.75) 50%,
+        rgba(56, 189, 248, 0.2) 60%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Ativação das animações de 2 segundos no HOVER */
+    .card:hover .cover-frame img {
+      animation: aguaOndulacao 2s ease-in-out forwards;
+    }
+
+    .card:hover .cover-frame::after {
+      opacity: 1;
+      animation: brilhoAgua 2s ease-in-out forwards;
+    }
+
+    /* Keyframes: Animação de Ondulação da Imagem */
+    @keyframes aguaOndulacao {
+      0% {
+        transform: scale(1) skew(0deg, 0deg);
+        filter: brightness(1);
+      }
+      20% {
+        transform: scale(1.08, 0.94) skew(3deg, 1.5deg);
+        filter: brightness(1.1);
+      }
+      40% {
+        transform: scale(0.95, 1.06) skew(-3deg, -2deg);
+        filter: brightness(0.96);
+      }
+      65% {
+        transform: scale(1.03, 0.98) skew(1.5deg, 1deg);
+        filter: brightness(1.05);
+      }
+      85% {
+        transform: scale(0.99, 1.01) skew(-0.5deg, 0deg);
+        filter: brightness(1);
+      }
+      100% {
+        transform: scale(1) skew(0deg, 0deg);
+        filter: brightness(1);
+      }
+    }
+
+    /* Keyframes: Passagem do reflexo de onda */
+    @keyframes brilhoAgua {
+      0% {
+        transform: translate(-30%, -30%) rotate(0deg);
+        opacity: 0;
+      }
+      25% {
+        opacity: 1;
+      }
+      100% {
+        transform: translate(45%, 45%) rotate(25deg);
+        opacity: 0;
+      }
     }
 
     .cover-placeholder {
@@ -451,7 +528,6 @@
       resultsGrid.innerHTML = books.map(book => {
         let rawUrl = (book.capaUrl || '').trim().replace(/\s+/g, '');
         
-        // Adiciona https:// automaticamente caso o link tenha sido colado sem o protocolo
         if (rawUrl && !rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
           rawUrl = 'https://' + rawUrl;
         }
