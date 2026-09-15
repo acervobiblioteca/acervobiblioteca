@@ -451,6 +451,9 @@
       resultsGrid.innerHTML = books.map(book => {
         const rawUrl = (book.capaUrl || '').trim().replace(/\s+/g, '');
         const hasCover = rawUrl.length > 0;
+        
+        // Proxy para liberar o bloqueio de imagem de terceiros (Amazon, Estante Virtual, etc)
+        const proxiedUrl = hasCover ? `https://images.weserv.nl/?url=${encodeURIComponent(rawUrl)}` : '';
 
         return `
           <div class="card">
@@ -463,9 +466,8 @@
               </div>
               <div class="cover-frame">
                 ${hasCover ? `
-                  <img src="${rawUrl}" 
+                  <img src="${proxiedUrl}" 
                        alt="Capa" 
-                       referrerpolicy="no-referrer" 
                        onerror="this.classList.add('hide-img'); this.nextElementSibling.classList.remove('hide-placeholder');">
                   <span class="cover-placeholder hide-placeholder">📖</span>
                 ` : `
