@@ -449,11 +449,14 @@
 
     function renderBooks(books) {
       resultsGrid.innerHTML = books.map(book => {
-        const rawUrl = (book.capaUrl || '').trim().replace(/\s+/g, '');
-        const hasCover = rawUrl.length > 0;
+        let rawUrl = (book.capaUrl || '').trim().replace(/\s+/g, '');
         
-        // Proxy para liberar o bloqueio de imagem de terceiros (Amazon, Estante Virtual, etc)
-        const proxiedUrl = hasCover ? `https://images.weserv.nl/?url=${encodeURIComponent(rawUrl)}` : '';
+        // Adiciona https:// automaticamente caso o link tenha sido colado sem o protocolo
+        if (rawUrl && !rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
+          rawUrl = 'https://' + rawUrl;
+        }
+
+        const hasCover = rawUrl.length > 0;
 
         return `
           <div class="card">
@@ -466,8 +469,9 @@
               </div>
               <div class="cover-frame">
                 ${hasCover ? `
-                  <img src="${proxiedUrl}" 
+                  <img src="${rawUrl}" 
                        alt="Capa" 
+                       referrerpolicy="no-referrer"
                        onerror="this.classList.add('hide-img'); this.nextElementSibling.classList.remove('hide-placeholder');">
                   <span class="cover-placeholder hide-placeholder">📖</span>
                 ` : `
